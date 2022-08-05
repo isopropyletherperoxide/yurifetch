@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
   cout << "Getting Image..." << endl;
   get_file(file_url, file_name);
   curl_easy_cleanup(curl);
+  remove("tree.xml");
 }
 
 void get_file(std::string link, std::string outfilename) {
