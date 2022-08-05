@@ -5,20 +5,23 @@
 #include <pugixml.hpp>
 #include <stdio.h>
 #include <string>
-int postCount;
+int post_count;
 
 pugi::xml_document doc;
 pugi::xml_node posts, post;
+char xmlname[FILENAME_MAX] = "tree.xml";
 
 CURL *curl;
 CURLcode res;
+
 std::string file_url, file_name, url, tag, pid;
 std::string api_key = API_KEY;
-char xmlname[FILENAME_MAX] = "tree.xml";
+
 using namespace std;
+
 void get_file(std::string, std::string);
 void get_random_post();
-int children_count(pugi::xml_node);
+
 int main(int argc, char *argv[]) {
   pid = "1";
   srand((unsigned)time(0));
@@ -28,7 +31,7 @@ int main(int argc, char *argv[]) {
       pid = argv[2];
     }
   } else {
-    cout << "No tags! \nUsage: yurifetch: \"tag1+tag2\" <pid> (optional) "
+    cerr << "No tags! \nUsage: yurifetch: \"tag1+tag2\" <pid> (optional) "
          << endl;
     exit(1);
   }
@@ -38,19 +41,21 @@ int main(int argc, char *argv[]) {
   }
   url = string("https://gelbooru.com/"
                "index.php?page=dapi&s=post&q=index&json=0&tags=") += tag +=
-      string(API_KEY) += string(USER_ID) += string("&pid=") += pid;
+      string(API_KEY) += string(USER_ID) += string("&pid=") +=
+      pid; // as defined in api.h
   // cout << url << endl; // debug thing
-  curl = curl_easy_init(); // curl init & getting/parsing the actual xml file
+  curl = curl_easy_init();
   get_file(url, "tree.xml");
   pugi::xml_parse_result result = doc.load_file("tree.xml");
-  posts = doc.child("posts"); // get the root posts array
-  postCount = children_count(posts);
-  if (postCount < 1) {
-    cout << "No Posts Found!";
+  posts = doc.child("posts");
+  int children_count(pugi::xml_node);
+  post_count = children_count(posts);
+  if (post_count < 1) {
+    cerr << "No Posts Found!";
     exit(1);
   }
-  cout << postCount << " posts fetched~!" << endl;
-  post = posts.child("post"); // get the actual post
+  cout << post_count << " posts fetched~!" << endl;
+  post = posts.child("post");
   get_random_post();
   file_url = post.child_value("file_url");
   file_name = post.child_value("image");
@@ -70,13 +75,13 @@ void get_file(std::string link, std::string outfilename) {
     res = curl_easy_perform(curl);
     fclose(file);
   } else {
-    cout << "Curl Failed!" << endl;
+    cerr << "Curl Failed!" << endl;
     exit(1);
   }
 }
 
-void get_random_post() { // get one random post out of 100
-  for (int i = 0; i < (rand() % (postCount - 1)); ++i) {
+void get_random_post() { // get one random post out of the amount on the page
+  for (int i = 0; i < (rand() % (post_count - 1)); ++i) {
     post = post.next_sibling();
   }
 }
