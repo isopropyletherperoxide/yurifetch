@@ -73,7 +73,8 @@ void get_file(std::string link, std::string outfilename) {
 void get_random_post(
     int post_count) { // get one random post out of the amount on the page
   srand((unsigned)time(0));
-  for (int i = 0; i < (rand() % (post_count - 1)); ++i) {
+  int random_num = (rand() % (post_count) - 1);
+  for (int i = 0; i <= random_num; ++i) {
     post = post.next_sibling();
   }
 }
