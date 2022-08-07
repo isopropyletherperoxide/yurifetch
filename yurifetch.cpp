@@ -97,7 +97,7 @@ void command_parse(int argc, char *argv[]) {
     exit(1);
   }
   if (tag == "-v") {
-    cout << "yurifetch v0.1 by aryl" << endl;
+    cout << "yurifetch v0.2 by aryl" << endl;
     exit(0);
   }
 }
