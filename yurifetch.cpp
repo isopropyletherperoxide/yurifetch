@@ -5,7 +5,6 @@
 #include <pugixml.hpp>
 #include <stdio.h>
 #include <string>
-int post_count;
 
 pugi::xml_document doc;
 pugi::xml_node posts, post;
@@ -20,30 +19,19 @@ std::string api_key = API_KEY;
 using namespace std;
 
 void get_file(std::string, std::string);
-void get_random_post();
+void get_random_post(int);
+void viu_call(std::string);
+void command_parse(int, char *argv[]);
 
 int main(int argc, char *argv[]) {
-  pid = "1";
-  srand((unsigned)time(0));
-  if (argc > 1) {
-    tag = argv[1];
-    if (argc > 2) {
-      pid = argv[2];
-    }
-  } else {
-    cerr << "No tags! \nUsage: yurifetch: \"tag1+tag2\" <pid> (optional) "
-         << endl;
-    exit(1);
-  }
-  if (tag == "-v") {
-    cout << "yurifetch v0.1 by aryl" << endl;
-    exit(0);
-  }
+  pid = "0";
+  int post_count;
+  command_parse(argc, argv);
   url = string("https://gelbooru.com/"
-               "index.php?page=dapi&s=post&q=index&json=0&tags=") += tag +=
-      string(API_KEY) += string(USER_ID) += string("&pid=") +=
+               "index.php?page=dapi&s=post&q=index&json=0&tags=") +
+        tag + string(API_KEY) += string(USER_ID) += string("&pid=") +=
       pid; // as defined in api.h
-  // cout << url << endl; // debug thing
+  //  cout << url << endl; // debug thing
   curl = curl_easy_init();
   get_file(url, "tree.xml");
   pugi::xml_parse_result result = doc.load_file("tree.xml");
@@ -56,12 +44,13 @@ int main(int argc, char *argv[]) {
   }
   cout << post_count << " posts fetched~!" << endl;
   post = posts.child("post");
-  get_random_post();
+  get_random_post(post_count);
   file_url = post.child_value("file_url");
   file_name = post.child_value("image");
   cout << file_name << endl;
   cout << "Getting Image..." << endl;
   get_file(file_url, file_name);
+  viu_call(file_name);
   curl_easy_cleanup(curl);
   remove("tree.xml");
 }
@@ -81,7 +70,9 @@ void get_file(std::string link, std::string outfilename) {
   }
 }
 
-void get_random_post() { // get one random post out of the amount on the page
+void get_random_post(
+    int post_count) { // get one random post out of the amount on the page
+  srand((unsigned)time(0));
   for (int i = 0; i < (rand() % (post_count - 1)); ++i) {
     post = post.next_sibling();
   }
@@ -91,4 +82,30 @@ int children_count(pugi::xml_node node) {
   for (pugi::xml_node child : node.children())
     n++;
   return n;
+}
+
+void command_parse(int argc, char *argv[]) {
+  if (argc > 1) {
+    tag = argv[1];
+    if (argc > 2) {
+      pid = argv[2];
+    }
+  } else {
+    cerr << "No tags! \nUsage: yurifetch: \"tag1+tag2\" <pid> (optional) "
+         << endl;
+    exit(1);
+  }
+  if (tag == "-v") {
+    cout << "yurifetch v0.1 by aryl" << endl;
+    exit(0);
+  }
+}
+
+void viu_call(std::string filename) {
+  std::string arg;
+  arg = std::string("viu ") + filename + std::string(" 2>> /dev/null");
+  int smell = std::system(arg.c_str());
+  if (smell != 0) {
+    std::cout << "Viu not found!";
+  }
 }
