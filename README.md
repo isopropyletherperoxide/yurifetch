@@ -11,3 +11,4 @@ Write down your gelbooru API_KEY and USER_ID in api.h and run
 ### Dependencies
 - libcurl
 - pugixml
+- viu (optional)
